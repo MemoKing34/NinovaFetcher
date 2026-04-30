@@ -278,7 +278,7 @@ def main(username: str, password: str, single_thread: bool, downloads_path: Path
     ninova.login(username, password)
     click.echo("Download started.")
     courses = ninova.get_courses()
-    if single_thread:
+    if True: # TODO: implement multithreading/multiprocessing
         for course in courses:
             ninova.download_course(course)
     else:
