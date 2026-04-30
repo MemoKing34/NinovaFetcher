@@ -45,7 +45,7 @@ class Storage:
     def close(self):
         try:
             self._cursor.close()
-        except sqlite3.ProgrammingError:
+        except Exception:
             pass
         self._connection.close()
         

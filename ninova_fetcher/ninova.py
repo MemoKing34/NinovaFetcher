@@ -72,10 +72,10 @@ class Ninova:
         self.session = requests.Session()
         self.downloads_path = downloads_path or Path("downloads")
         self.uploads_path = uploads_path or Path("uploads")
-        self.downloads_data = Storage(self.downloads_path / 'ninova.db', self.downloads_path)
-        self.uploads_data = {}
         self.downloads_path.mkdir(exist_ok=True)
         self.uploads_path.mkdir(exist_ok=True)
+        self.downloads_data = Storage(self.downloads_path / 'ninova.db', self.downloads_path)
+        self.uploads_data = {}
 
 
     def dump_data(self):
@@ -249,7 +249,7 @@ def load_dotenv(dotenv_path: str | Path = DOTENV_PATH) -> bool:
 def create_dotenv(dotenv_path: str | Path = DOTENV_PATH, **kwargs):
     dotenv.set_key(dotenv_path, "ITU_USERNAME", kwargs.get('username', ''))
     dotenv.set_key(dotenv_path, "ITU_PASSWORD", kwargs.get('password', ''))
-    dotenv.set_key(dotenv_path, "SINGLE_THREAD", kwargs.get('single_thread', ''))
+    dotenv.set_key(dotenv_path, "SINGLE_THREAD", str(kwargs.get('single_thread', '')))
 
 #monkeypatch
 click.termui.hidden_prompt_func = hidden_prompt_func
