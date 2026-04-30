@@ -255,7 +255,7 @@ def create_dotenv(dotenv_path: str | Path = DOTENV_PATH, **kwargs):
 click.termui.hidden_prompt_func = hidden_prompt_func
 
 @click.command()
-@click.option('--username', envvar='ITU_USERNAME')
+@click.option('--username', envvar='ITU_USERNAME', prompt=True)
 @click.password_option('--password', envvar='ITU_PASSWORD', confirmation_prompt=False)
 @click.option('--single-thread/--no-single-thread', default=False, envvar='SINGLE_THREAD', type=bool)
 @click.option('-d', '--downloads-path', type=click.Path(exists=False, file_okay=False, path_type=Path), default=Path('downloads'))
