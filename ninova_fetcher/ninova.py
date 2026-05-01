@@ -157,7 +157,7 @@ class Ninova:
         if _list := tag.find_all("td"):
             datetime = _list[-1].text.strip()
         #print(f"{datetime=!r}")
-        return NinovaPath(tag.find("a").text, tag.find("a").attrs["href"], tag.find("img").attrs["src"], datetime, parent, course, file_class)
+        return NinovaPath(tag.find("a").text.strip(), tag.find("a").attrs["href"], tag.find("img").attrs["src"], datetime, parent, course, file_class)
 
     @staticmethod
     def create_link_file(folder: Path, filename_without_suffix: str, url: str) -> Path:
