@@ -229,7 +229,7 @@ class Ninova:
             return
         for odev_url in odev_urls:
             if odev_url: # Sometimes odev_url might be None
-                self._download_homework(odev_url.attrs['href'], download_path / odev_url.text.strip(), course, file_class)
+                self._download_homework(odev_url.attrs['href'], download_path / odev_url.text.strip().replace(':', ''), course, file_class)
 
     def _download_homework(self, _url: str, download_path: Path, course: Course, file_class: FileClass):
         response = self.session.get(BASE_URL + _url)
