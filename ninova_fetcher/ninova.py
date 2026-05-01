@@ -148,6 +148,7 @@ class Ninova:
         self._download(course.url + SINIF_DOSYALARI_URL_EXTENSION, path / "Sınıf Dosyaları", course, 'sinif')
         self._download(course.url + DERS_DOSYALARI_URL_EXTENSION, path / "Ders Dosyaları", course, 'ders')
         self._download_homeworks(course.url + ODEVLER_URL_EXTENSION, path / "Ödevler", course, 'odev')
+        self.downloads_data.commit() # Just lets ensure this
 
 
     @staticmethod
