@@ -79,6 +79,7 @@ class Ninova:
 
 
     def dump_data(self):
+        self.downloads_data.commit()
         self.downloads_data.close()
 
     def load_data(self):
