@@ -238,6 +238,7 @@ class Ninova:
         title: "element.Tag" = soup.find(attrs={'id': "ctl00_pnlHeader"})
         form2: "element.Tag" = soup.find(attrs={'class': "form2"})
         (download_path / (title.text.strip() + ".odev.txt")).write_text(form2.text.strip(), encoding='utf-8')
+        self.create_link_file(download_path, 'Ödevi Yükle.odev', BASE_URL + _url + '/OdevGonder')
 
         tables: list["element.Tag"] = form2.find_all("table")
         files: list["element.Tag"] = tables[2].find_all("tr")[1:]
