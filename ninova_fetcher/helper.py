@@ -13,10 +13,13 @@ class FileClass(StrEnum):
     DERS = auto()
     ODEV = auto()
 
-class Course(NamedTuple):
+@dataclass
+class Course:
     name: str
     crn: str
     url: str
+    estimated_size: int = 0
+    downloaded_size: int = 0
 
     @property
     def folder_name(self) -> str:
@@ -34,6 +37,7 @@ class NinovaPath:
     name: str
     url: str
     icon: str
+    estimated_size: int | None
     datetime: str | None
     parent: Self | None
     course: Course | None
@@ -50,3 +54,24 @@ def hidden_prompt_func(prompt: str) -> str:
         return pwinput(prompt)
     except Exception:
         return getpass(prompt)
+
+def convert_size_to_int(size: str) -> int:
+    # take a string like '5 MB', '140 KB' or '387 Bayt'
+    # and convert them into relevant byte strings
+    if not size:
+        return 0
+    _list = size.split()
+    int_size = int(_list[0])
+    if _list[1].upper() == 'TB':
+        int_size *= 1024
+        _list[1] = 'GB'
+    if _list[1].upper() == 'GB':
+        int_size *= 1024
+        _list[1] = 'MB'
+    if _list[1].upper() == 'MB':
+        int_size *= 1024
+        _list[1] = 'KB'
+    if _list[1].upper() == 'KB':
+        int_size *= 1024
+        _list[1] = 'Bayt'
+    return int_size

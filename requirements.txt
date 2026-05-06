@@ -4,3 +4,4 @@ lxml
 python-dotenv
 pwinput
 click
+rich

@@ -35,6 +35,7 @@ class Storage:
             name=name,
             url=url,
             icon='',
+            estimated_size=0,
             datetime=datetime,
             parent=None,
             course=Course.from_folder_name(folder_name, course_url),

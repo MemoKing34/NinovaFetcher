@@ -15,8 +15,10 @@ import requests
 import click
 from bs4 import BeautifulSoup, element
 from pwinput import pwinput
+from rich.logging import RichHandler
+from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
 
-from .helper import Course, FileClass, NinovaPath, hidden_prompt_func
+from .helper import Course, FileClass, NinovaPath, hidden_prompt_func, convert_size_to_int
 from .storage import Storage
 from . import __version__
 
@@ -79,6 +81,7 @@ def sanitize_filename(filename: str, force: bool = False) -> str:
 class Ninova:
     def __init__(self, downloads_path: Path = None, uploads_path: Path = None):
         self.session = requests.Session()
+        self.progress = Progress(SpinnerColumn(), *Progress.get_default_columns(), TimeElapsedColumn())
         self.downloads_path = downloads_path or Path("downloads")
         self.uploads_path = uploads_path or Path("uploads")
         self.downloads_path.mkdir(exist_ok=True)
@@ -103,7 +106,7 @@ class Ninova:
 
     # Logs in with username and password
     def login(self, username: str, password: str) -> "requests.Session":
-        log.info(f"Logging as user {username}...")
+        self.progress.log(f"Logging as user {username}...")
         # Finds the required url after some redirects
         response = self.session.get(f"{BASE_URL}/Kampus1", timeout=2)  # For hidden inputs
         login_url = response.url
@@ -151,7 +154,7 @@ class Ninova:
     def download_course(self, course: Course) -> None:
         path = self.downloads_path / course.folder_name
         path.mkdir(parents=True, exist_ok=True)
-        log.info(f"Downloading course {course.name} with crn {course.crn}")
+        self.progress.log(f"Downloading course {course.name!r} with crn {course.crn}")
         #self.downloads_data[course.folder_name] = {'sinif': [], 'ders': [], 'odev': []}
         self._download(course.url + SINIF_DOSYALARI_URL_EXTENSION, path / "Sınıf Dosyaları", course, 'sinif')
         self._download(course.url + DERS_DOSYALARI_URL_EXTENSION, path / "Ders Dosyaları", course, 'ders')
@@ -161,10 +164,14 @@ class Ninova:
     @staticmethod
     def parse_ninova_path(tag: "element.Tag", parent: NinovaPath | None = None, course: Course | None = None, file_class: FileClass | None = None) -> NinovaPath:
         datetime: str | None = None
+        estimated_size: int = 0
         if _list := tag.find_all("td"):
             datetime = _list[-1].text.strip()
-        #print(f"{datetime=!r}")
-        return NinovaPath(sanitize_filename(tag.find("a").text.strip()), tag.find("a").attrs["href"], tag.find("img").attrs["src"], datetime, parent, course, file_class)
+        if len(_list) > 1:
+            estimated_size = convert_size_to_int(_list[-2].text.strip())
+        if parent is None:
+            course.estimated_size += estimated_size
+        return NinovaPath(sanitize_filename(tag.find("a").text.strip()), tag.find("a").attrs["href"], tag.find("img").attrs["src"], estimated_size, datetime, parent, course, file_class)
 
     @staticmethod
     def create_link_file(folder: Path, filename_without_suffix: str, url: str) -> Path:
@@ -209,6 +216,7 @@ class Ninova:
                     ninova_path.path = fake_np.path
                     if ninova_path.path.exists():
                         log.debug(f"{ninova_path.name!r} found in database not downloading.")
+                        filesize = ninova_path.path.stat().st_size
                         continue
                     log.debug(f"{ninova_path.name!r} found in database but file does not exist. Continuing download...")
                 except FileNotFoundError:
@@ -216,7 +224,7 @@ class Ninova:
                 r = self.session.get(BASE_URL + ninova_path.url)
                 _offset = r.headers.get("content-disposition", "").index("filename=") + 9
                 filename = r.headers.get("content-disposition", "")[_offset:].encode("iso-8859-9").decode("utf-8")
-                #print(f"{filename=}\n{ninova_path.name=}\n{filename==ninova_path.name=}")
+                filesize = int(r.headers.get("Content-Length", 0))
                 if not filename:
                     filename = ninova_path.name
                 ninova_path.path = download_path / filename
@@ -274,24 +282,34 @@ click.termui.hidden_prompt_func = hidden_prompt_func
 @click.version_option(__version__, prog_name='NinovaFetcher')
 def main(username: str, password: str, single_thread: bool, downloads_path: Path, uploads_path: Path, verbose: int):
     # setup config
-    logging.basicConfig(format="[%(asctime)s] %(levelname)s:%(name)s:%(message)s")
+    #logging.basicConfig(format="[%(asctime)s] %(levelname)s:%(name)s:%(message)s")
+    rich_handler = RichHandler(tracebacks_show_locals=True)
+    logging.basicConfig(format="%(message)s", datefmt="[%X]", handlers=[rich_handler])
     if verbose == 1:
         log.setLevel(logging.INFO)
+        rich_handler.setLevel(logging.INFO)
     elif verbose == 2:
+        import rich.traceback
         log.setLevel(logging.DEBUG)
+        rich_handler.setLevel(logging.DEBUG)
+        rich.traceback.install(show_locals=True)
     elif verbose >= 3:
         logging.basicConfig(level=logging.DEBUG)
+        rich_handler.setLevel(logging.DEBUG)
     ninova = Ninova(downloads_path, uploads_path)
     ninova.load_data()
-    ninova.login(username, password)
-    click.echo("Download started.")
-    courses = ninova.get_courses()
-    if True: # TODO: implement multithreading/multiprocessing
-        for course in courses:
-            ninova.download_course(course)
-    else:
-        with mp.Pool() as pool:
-            pool.map(ninova.download_course, courses)
+    with ninova.progress:
+        task3 = ninova.progress.add_task("[yellow]Downloading", total=None)
+        ninova.login(username, password)
+        ninova.progress.log("Download started.")
+        courses = ninova.get_courses()
+        if True: # TODO: implement multithreading/multiprocessing
+            for course in courses:
+                ninova.download_course(course)
+        else:
+            with mp.Pool() as pool:
+                pool.map(ninova.download_course, courses)
+        ninova.progress.update(task3)
     ninova.dump_data()
     if not DOTENV_PATH.exists():
         create_dotenv(DOTENV_PATH, username=username, password=password, single_thread=single_thread)
