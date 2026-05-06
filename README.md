@@ -12,6 +12,9 @@ Windows kullanıcıları aşağıdaki tek komut ile hem Python hem de Git'i yük
 irm https://raw.githubusercontent.com/MemoKing34/NinovaFetcher/refs/heads/master/Install.ps1 | iex
 ```
 
+> [!INFO]
+> Eğer bu komutu nasıl çalıştıracağınız hakkında fikriniz yok ise windows logosuna sağ tıklayın ve "Terminal" seçeneğine tıklayın. Ardından karşınıza gelen siyah kutuya bu komutu yapıştırın ve entere basın. Gerisini okuyarak yapabilirsiniz :)
+
 ### Manuel kurulum
 
 > [!NOTE]
