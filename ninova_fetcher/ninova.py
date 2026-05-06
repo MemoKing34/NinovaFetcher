@@ -274,8 +274,6 @@ click.termui.hidden_prompt_func = hidden_prompt_func
 @click.version_option(__version__, prog_name='NinovaFetcher')
 def main(username: str, password: str, single_thread: bool, downloads_path: Path, uploads_path: Path, verbose: int):
     # setup config
-    if not DOTENV_PATH.exists():
-        create_dotenv(DOTENV_PATH, username=username, password=password, single_thread=single_thread)
     logging.basicConfig(format="[%(asctime)s] %(levelname)s:%(name)s:%(message)s")
     if verbose == 1:
         log.setLevel(logging.INFO)
@@ -295,6 +293,8 @@ def main(username: str, password: str, single_thread: bool, downloads_path: Path
         with mp.Pool() as pool:
             pool.map(ninova.download_course, courses)
     ninova.dump_data()
+    if not DOTENV_PATH.exists():
+        create_dotenv(DOTENV_PATH, username=username, password=password, single_thread=single_thread)
     click.echo("Download successfull.")
 
 if __name__ == "__main__":
