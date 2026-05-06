@@ -67,6 +67,15 @@ LINK_TEMPLATES = {
 log = logging.getLogger(__name__)
 
 
+def sanitize_filename(filename: str, force: bool = False) -> str:
+    # replaces unsupported chars with #
+    # again thanks to yt-dlp
+    REPL = '#'
+    if sys.platform != 'win32' and not force:
+        return filename.replace('/', REPL)
+    return re.sub(r'[/<>:"\|\\?\*]|[\s.]$', REPL, filename)
+
+
 class Ninova:
     def __init__(self, downloads_path: Path = None, uploads_path: Path = None):
         self.session = requests.Session()
@@ -76,7 +85,6 @@ class Ninova:
         self.uploads_path.mkdir(exist_ok=True)
         self.downloads_data = Storage(self.downloads_path / 'ninova.db', self.downloads_path)
         self.uploads_data = {}
-
 
     def dump_data(self):
         self.downloads_data.commit()
@@ -150,14 +158,13 @@ class Ninova:
         self._download_homeworks(course.url + ODEVLER_URL_EXTENSION, path / "Ödevler", course, 'odev')
         self.downloads_data.commit() # Just lets ensure this
 
-
     @staticmethod
     def parse_ninova_path(tag: "element.Tag", parent: NinovaPath | None = None, course: Course | None = None, file_class: FileClass | None = None) -> NinovaPath:
         datetime: str | None = None
         if _list := tag.find_all("td"):
             datetime = _list[-1].text.strip()
         #print(f"{datetime=!r}")
-        return NinovaPath(tag.find("a").text.strip(), tag.find("a").attrs["href"], tag.find("img").attrs["src"], datetime, parent, course, file_class)
+        return NinovaPath(sanitize_filename(tag.find("a").text.strip()), tag.find("a").attrs["href"], tag.find("img").attrs["src"], datetime, parent, course, file_class)
 
     @staticmethod
     def create_link_file(folder: Path, filename_without_suffix: str, url: str) -> Path:
@@ -195,7 +202,7 @@ class Ninova:
                 # it's just a redirect url
                 r = self.session.get(BASE_URL + ninova_path.url, allow_redirects=False)
                 url_file_content = r.headers.get("Location") if r.is_redirect else r.url
-                ninova_path.path = self.create_link_file(download_path, ninova_path.name.replace("/", "_").replace(":", "_"), url_file_content)
+                ninova_path.path = self.create_link_file(download_path, ninova_path.name, url_file_content)
             else:
                 try:
                     fake_np: NinovaPath = self.downloads_data.get_file_by_hash(ninova_path.hash)
@@ -229,7 +236,7 @@ class Ninova:
             return
         for odev_url in odev_urls:
             if odev_url: # Sometimes odev_url might be None
-                self._download_homework(odev_url.attrs['href'], download_path / odev_url.text.strip().replace(':', ''), course, file_class)
+                self._download_homework(odev_url.attrs['href'], download_path / odev_url.text.strip(), course, file_class)
 
     def _download_homework(self, _url: str, download_path: Path, course: Course, file_class: FileClass):
         response = self.session.get(BASE_URL + _url)
