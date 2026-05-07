@@ -1,13 +1,14 @@
-import sys
 import hashlib
+import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from getpass import getpass
 from pathlib import Path
 from typing import NamedTuple, Optional
+
 if sys.version_info >= (3, 11):
+    from enum import ReprEnum, StrEnum
     from typing import Self
-    from enum import StrEnum, ReprEnum
 else:
     from typing_extensions import Self
     class ReprEnum(Enum):

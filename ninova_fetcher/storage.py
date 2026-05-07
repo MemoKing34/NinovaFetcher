@@ -3,7 +3,7 @@ import sqlite3
 from pathlib import Path
 from typing import Union
 
-from .helper import FileClass, NinovaPath, Course
+from .helper import Course, FileClass, NinovaPath
 
 
 class Storage:

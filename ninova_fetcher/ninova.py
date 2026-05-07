@@ -7,23 +7,25 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Union, Optional
+from typing import Any, Optional, Union
+
 if sys.version_info >= (3, 11):
     from typing import TypeAlias
 else:
     from typing_extensions import TypeAliasType as TypeAlias
 
+import click
 import dotenv
 import requests
-import click
 from bs4 import BeautifulSoup, element
 from pwinput import pwinput
 from rich.logging import RichHandler
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
 
-from .helper import Course, FileClass, NinovaPath, hidden_prompt_func, convert_size_to_int
-from .storage import Storage
 from . import __version__
+from .helper import (Course, FileClass, NinovaPath, convert_size_to_int,
+                     hidden_prompt_func)
+from .storage import Storage
 
 BASE_URL = "https://ninova.itu.edu.tr"
 SINIF_DOSYALARI_URL_EXTENSION = "/SinifDosyalari"
