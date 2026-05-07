@@ -20,7 +20,9 @@ import requests
 from bs4 import BeautifulSoup, element
 from pwinput import pwinput
 from rich.logging import RichHandler
-from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
+from rich.progress import (BarColumn, Progress, SpinnerColumn,
+                           TaskProgressColumn, TextColumn, TimeElapsedColumn,
+                           TimeRemainingColumn)
 
 from . import __version__
 from .helper import (Course, FileClass, NinovaPath, convert_size_to_int,
@@ -83,7 +85,8 @@ def sanitize_filename(filename: str, force: bool = False) -> str:
 class Ninova:
     def __init__(self, downloads_path: Path = None, uploads_path: Path = None):
         self.session = requests.Session()
-        self.progress = Progress(SpinnerColumn(), *Progress.get_default_columns(), TimeElapsedColumn())
+        self.progress = Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"),
+                                 BarColumn(bar_width=None), TaskProgressColumn(), TimeRemainingColumn(), TimeElapsedColumn())
         self.downloads_path = downloads_path or Path("downloads")
         self.uploads_path = uploads_path or Path("uploads")
         self.downloads_path.mkdir(exist_ok=True)
