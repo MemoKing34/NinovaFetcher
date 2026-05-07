@@ -1,19 +1,20 @@
 import hashlib
 import sqlite3
 from pathlib import Path
+from typing import Union
 
 from .helper import FileClass, NinovaPath, Course
 
 
 class Storage:
-    def __init__(self, filename: str | Path, downloads_path: Path):
+    def __init__(self, filename: Union[str, Path], downloads_path: Path):
         self._downloads_path = downloads_path
         self._connection = sqlite3.connect(filename)
         self._cursor = self._connection.cursor()
         self._cursor.execute('CREATE TABLE IF NOT EXISTS files (hash TEXT, name TEXT, filepath TEXT, datetime TEXT, url TEXT, fileclass TEXT);')
         self._connection.commit()
 
-    def add_file(self, hash: str, name: str, filepath: str | Path, datetime: str, url: str, fileclass: FileClass) -> None:
+    def add_file(self, hash: str, name: str, filepath: Union[str, Path], datetime: str, url: str, fileclass: FileClass) -> None:
         self._cursor.execute('INSERT INTO files (hash, name, filepath, datetime, url, fileclass) VALUES (?, ?, ?, ?, ?, ?)',
                              (hash, name, str(filepath), datetime, url, fileclass))
         

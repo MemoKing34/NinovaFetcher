@@ -7,8 +7,11 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, TypeAlias
-from unittest import case
+from typing import Any, Union, Optional
+if sys.version_info >= (3, 11):
+    from typing import TypeAlias
+else:
+    from typing_extensions import TypeAliasType as TypeAlias
 
 import dotenv
 import requests
@@ -26,10 +29,7 @@ BASE_URL = "https://ninova.itu.edu.tr"
 SINIF_DOSYALARI_URL_EXTENSION = "/SinifDosyalari"
 DERS_DOSYALARI_URL_EXTENSION = "/DersDosyalari"
 ODEVLER_URL_EXTENSION = "/Odevler"
-if sys.version_info >= (3, 12):
-    type PathList = list[Path | 'PathList']
-else:
-    PathList: TypeAlias = list[Path | 'PathList']
+PathList: TypeAlias = list[Union['Path', 'PathList']]
 
 DOTENV_PATH: Path = Path(".env")
 
@@ -162,8 +162,8 @@ class Ninova:
         self.downloads_data.commit() # Just lets ensure this
 
     @staticmethod
-    def parse_ninova_path(tag: "element.Tag", parent: NinovaPath | None = None, course: Course | None = None, file_class: FileClass | None = None) -> NinovaPath:
-        datetime: str | None = None
+    def parse_ninova_path(tag: "element.Tag", parent: Optional[NinovaPath] = None, course: Optional[Course] = None, file_class: Optional[FileClass] = None) -> NinovaPath:
+        datetime: Optional[str] = None
         estimated_size: int = 0
         if _list := tag.find_all("td"):
             datetime = _list[-1].text.strip()
@@ -187,7 +187,7 @@ class Ninova:
         return linkpath
 
 
-    def _download(self, _url: str, download_path: Path, course: Course, file_class: FileClass, parent: NinovaPath | None = None):
+    def _download(self, _url: str, download_path: Path, course: Course, file_class: FileClass, parent: Optional[NinovaPath] = None):
         response = self.session.get(BASE_URL + _url)
         soup = BeautifulSoup(response.text, "html.parser")
         download_path.mkdir(parents=False, exist_ok=True)
@@ -261,10 +261,10 @@ class Ninova:
             ninova_path_list: list[NinovaPath] = [self.parse_ninova_path(tag, None, course, file_class) for tag in files]
             return self.__download(ninova_path_list, download_path, course, file_class)
 
-def load_dotenv(dotenv_path: str | Path = DOTENV_PATH) -> bool:
+def load_dotenv(dotenv_path: Union[str, Path] = DOTENV_PATH) -> bool:
     return dotenv.load_dotenv(dotenv_path, override=True)
 
-def create_dotenv(dotenv_path: str | Path = DOTENV_PATH, **kwargs):
+def create_dotenv(dotenv_path: Union[str, Path] = DOTENV_PATH, **kwargs):
     dotenv.set_key(dotenv_path, "ITU_USERNAME", kwargs.get('username', ''))
     dotenv.set_key(dotenv_path, "ITU_PASSWORD", kwargs.get('password', ''))
     dotenv.set_key(dotenv_path, "SINGLE_THREAD", str(kwargs.get('single_thread', '')))
