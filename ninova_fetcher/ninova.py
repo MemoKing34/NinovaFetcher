@@ -91,6 +91,8 @@ class Ninova:
         self.uploads_path = uploads_path or Path("uploads")
         self.downloads_path.mkdir(exist_ok=True)
         self.uploads_path.mkdir(exist_ok=True)
+        (self.downloads_path / '.gitignore').write_text('*')
+        (self.uploads_path / '.gitignore').write_text('*')
         self.downloads_data = Storage(self.downloads_path / 'ninova.db', self.downloads_path)
         self.uploads_data = {}
 
