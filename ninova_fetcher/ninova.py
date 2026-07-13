@@ -103,6 +103,13 @@ class Ninova:
     def load_data(self):
         pass
 
+    def save_ninova_image(self):
+        ninova_image_path = self.downloads_path / 'ninova.png'
+        if ninova_image_path.exists():
+            return
+        r = self.session.get("https://online.itu.edu.tr/img/ninova.png")
+        ninova_image_path.write_bytes(r.content)
+
     @staticmethod
     def _object_hook(dct: dict[Any, Any]):
         if 'sinif' in dct:
@@ -310,6 +317,7 @@ def main(username: str, password: str, single_thread: bool, downloads_path: Path
         ninova.login(username, password)
         ninova.progress.log("Download started.")
         courses = ninova.get_courses()
+        ninova.save_ninova_image()
         if True: # TODO: implement multithreading/multiprocessing
             for course in courses:
                 ninova.download_course(course)
