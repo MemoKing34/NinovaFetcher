@@ -156,13 +156,19 @@ class Ninova:
         Example return: [('BIL 112E', '24925', '/Sinif/12667.118786'), ...]
 
         crn value is also a string because havuz courses don't have a crn value,
-        and they return a 'Havuz' value
+        and they return a 'Havuz' value.
         """
         response = self.session.get(f"{BASE_URL}/Kampus1")
         soup = BeautifulSoup(response.text, "html.parser")
-        def get_info_from_class(tag: "element.Tag") -> Course:
-            return Course(tag.find("strong").text, tag.find("a").text.split()[-1], tag.find("a").attrs['href'])
-        return [get_info_from_class(tag) for tag in soup.find("ul").children if tag != "\n"]
+        def get_info_from_class(tag: "element.Tag", subtag: "element.Tag") -> Course:
+            _liste = subtag.find("a").text.split()
+            return Course(
+                tag.find("strong").text,
+                _liste[-1] if _liste[-1].isdigit() else ' '.join(_liste).replace("'", ""),
+                subtag.find("a").attrs['href']
+            )
+
+        return [get_info_from_class(tag, subtag or tag) for tag in soup.find("ul").children if tag != "\n" for subtag in tag.find("ul").children if subtag != "\n"]
 
 
     def download_course(self, course: Course) -> None:
@@ -210,7 +216,7 @@ class Ninova:
         except AttributeError:
             return
         return self.__download(ninova_path_list, download_path, course, file_class)
-        
+
     def __download(self, ninova_path_list: list[NinovaPath], download_path: Path, course: Course, file_class: FileClass):
         for ninova_path in ninova_path_list:
             log.debug(f"Downloading {ninova_path.name!r}")
