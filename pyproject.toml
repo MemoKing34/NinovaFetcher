@@ -1,5 +1,5 @@
 [project]
-name = "ninovafetcher"
+name = "NinovaFetcher"
 version = "0.1.0"
 authors = [
     { name = "MemoKing34", email = "82772029+MemoKing34@users.noreply.github.com" }
