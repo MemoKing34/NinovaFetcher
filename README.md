@@ -2,6 +2,9 @@
 
 `NinovaFetcher` İTÜ Ninova platformundan dosya indirme işlemini kolaylaştırmak için hazırlanmış bir programdır.
 
+> [!INFO]
+> Bu projede yapay zeka yalnızca windows spesifik kodlarda kullanılmıştır. Şu an bu dosyalar sadece `run.bat` ve `Install.ps1`'dir.
+
 ## Kullanım
 
 ### Windows kolay kurulum
