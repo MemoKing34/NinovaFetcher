@@ -1,0 +1,25 @@
+[project]
+name = "ninovafetcher"
+version = "0.1.0"
+authors = [
+    { name = "MemoKing34", email = "82772029+MemoKing34@users.noreply.github.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "click>=8.5.0",
+    "lxml>=6.1.3",
+    "pwinput>=1.0.3",
+    "python-dotenv>=1.2.4",
+    "requests>=2.34.2",
+    "rich>=15.0.0",
+    "typing-extensions>=4.16.0 ; python_full_version < '3.11'",
+]
+
+[tool.tox]
+env_list = ["py310", "py311", "py312", "py313", "py314", "py315"]
+
+[tool.tox.env_run_base]
+description = "Run the program for all of the versions above"
+deps = ["-r requirements.txt"]
+commands = [["python3", "-m", "ninova_fetcher", "-vv"]]
