@@ -288,6 +288,8 @@ def create_dotenv(dotenv_path: Union[str, Path] = DOTENV_PATH, **kwargs):
     dotenv.set_key(dotenv_path, "ITU_USERNAME", kwargs.get('username', ''))
     dotenv.set_key(dotenv_path, "ITU_PASSWORD", kwargs.get('password', ''))
     dotenv.set_key(dotenv_path, "SINGLE_THREAD", str(kwargs.get('single_thread', '')))
+    dotenv.set_key(dotenv_path, "DOWNLOADS_PATH", str(kwargs.get('downloads_path', '')))
+    dotenv.set_key(dotenv_path, "UPLOADS_PATH", str(kwargs.get('uploads_path', '')))
 
 #monkeypatch
 click.termui.hidden_prompt_func = hidden_prompt_func
@@ -296,8 +298,8 @@ click.termui.hidden_prompt_func = hidden_prompt_func
 @click.option('--username', envvar='ITU_USERNAME', prompt=True)
 @click.password_option('--password', envvar='ITU_PASSWORD', confirmation_prompt=False)
 @click.option('--single-thread/--no-single-thread', default=False, envvar='SINGLE_THREAD', type=bool)
-@click.option('-d', '--downloads-path', type=click.Path(exists=False, file_okay=False, path_type=Path), default=Path('downloads'))
-@click.option('--uploads-path', type=click.Path(exists=False, file_okay=False, path_type=Path), default=Path('uploads'))
+@click.option('-d', '--downloads-path', type=click.Path(exists=False, file_okay=False, path_type=Path), default=Path('downloads'), envvar='DOWNLOADS_PATH')
+@click.option('--uploads-path', type=click.Path(exists=False, file_okay=False, path_type=Path), default=Path('uploads'), envvar='UPLOADS_PATH')
 @click.option('-v', '--verbose', count=True)
 @click.version_option(__version__, prog_name='NinovaFetcher')
 def main(username: str, password: str, single_thread: bool, downloads_path: Path, uploads_path: Path, verbose: int):
@@ -333,7 +335,7 @@ def main(username: str, password: str, single_thread: bool, downloads_path: Path
         ninova.progress.update(task3)
     ninova.dump_data()
     if not DOTENV_PATH.exists():
-        create_dotenv(DOTENV_PATH, username=username, password=password, single_thread=single_thread)
+        create_dotenv(DOTENV_PATH, username=username, password=password, single_thread=single_thread, downloads_path=downloads_path, uploads_path=uploads_path)
     click.echo("Download successfull.")
 
 if __name__ == "__main__":
