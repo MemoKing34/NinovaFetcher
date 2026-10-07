@@ -70,6 +70,15 @@ LINK_TEMPLATES = {
     'webloc': DOT_WEBLOC_LINK_TEMPLATE,
 }
 
+try:
+    import lxml
+    PARSER = "lxml"
+except ImportError:
+    lxml = None
+    PARSER = "html.parser"
+finally:
+    del lxml
+
 log = logging.getLogger(__name__)
 
 
@@ -126,7 +135,7 @@ class Ninova:
         login_url = response.url
 
         # Finds hidden inputs and adds them into the payload for login
-        soup_login = BeautifulSoup(response.text, "html.parser")
+        soup_login = BeautifulSoup(response.text, PARSER)
         login_tokens: "element.ResultSet[element.Tag]" = soup_login.find_all("input")
 
         payload = {}
@@ -159,7 +168,7 @@ class Ninova:
         and they return a 'Havuz' value.
         """
         response = self.session.get(f"{BASE_URL}/Kampus1")
-        soup = BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(response.text, PARSER)
         def get_info_from_class(tag: "element.Tag", subtag: "element.Tag") -> Course:
             _liste = subtag.find("a").text.split()
             return Course(
@@ -209,7 +218,7 @@ class Ninova:
 
     def _download(self, _url: str, download_path: Path, course: Course, file_class: FileClass, parent: Optional[NinovaPath] = None):
         response = self.session.get(BASE_URL + _url)
-        soup = BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(response.text, PARSER)
         download_path.mkdir(parents=False, exist_ok=True)
         try:
             ninova_path_list: list[NinovaPath] = [self.parse_ninova_path(tag, parent, course, file_class) for tag in soup.find("tbody").children if tag != "\n"][1:]
@@ -254,7 +263,7 @@ class Ninova:
 
     def _download_homeworks(self, _url: str, download_path: Path, course: Course, file_class: FileClass):
         response = self.session.get(BASE_URL + _url)
-        soup = BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(response.text, PARSER)
         download_path.mkdir(exist_ok=True)
         sayfa_icerik: "element.Tag" = soup.find(attrs={'id': "SayfaIcerik"})
         odevler: list["element.Tag"] = sayfa_icerik.find_all("td")
@@ -268,7 +277,7 @@ class Ninova:
 
     def _download_homework(self, _url: str, download_path: Path, course: Course, file_class: FileClass):
         response = self.session.get(BASE_URL + _url)
-        soup = BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(response.text, PARSER)
         download_path.mkdir(exist_ok=True)
         title: "element.Tag" = soup.find(attrs={'id': "ctl00_pnlHeader"})
         form2: "element.Tag" = soup.find(attrs={'class': "form2"})
