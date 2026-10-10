@@ -170,22 +170,25 @@ class Ninova:
         """
         response = self.session.get(f"{BASE_URL}/Kampus1")
         soup = BeautifulSoup(response.text, PARSER)
-        def fetch_long_name(name, path):
+        def fetch_sinif_bilgisi(name, path):
             response = self.session.get(f"{BASE_URL}{path}{SINIF_BILGISI_URL_EXTENSION}")
             soup = BeautifulSoup(response.text, PARSER)
-            _tuple = [tag.text.strip() for tag in soup.find("table", attrs={'class': 'formAbetGoster'}).find_all("td")]
+            tables = soup.find_all("table", attrs={'class': 'formAbetGoster'})
+            _tuple = [tag.text.strip() for tag in tables[0].find_all("td")]
             _turkce_isim = _tuple[4]
             _ingilizce_isim = _tuple[6]
-            return _ingilizce_isim if 'E' in name.upper() else _turkce_isim
+            _donem = tables[1].find_all("td")[1].text.strip()
+            return _ingilizce_isim if 'E' in name.upper() else _turkce_isim, _donem
         
         def get_info_from_class(tag: "element.Tag", subtag: "element.Tag") -> Course:
             _liste = subtag.find("a").text.split()
             _path = subtag.find("a").attrs['href']
             _name = tag.find("strong").text
+            _long_name, _donem = fetch_sinif_bilgisi(_name, _path)
             return Course(
                 _name,
                 _liste[-1] if _liste[-1].isdigit() else ' '.join(_liste).replace("'", ""),
-                _path, fetch_long_name(_name, _path),
+                _path, _long_name, _donem
             )
 
         return [get_info_from_class(tag, subtag or tag) for tag in soup.find("ul").children if tag != "\n" for subtag in tag.find("ul").children if subtag != "\n"]

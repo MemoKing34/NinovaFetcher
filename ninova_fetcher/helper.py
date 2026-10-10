@@ -59,6 +59,7 @@ class Course:
     crn: str
     url: str
     long_name: str
+    donem: str = None
     estimated_size: int = 0
     downloaded_size: int = 0
 
