@@ -163,7 +163,7 @@ class Ninova:
         """Returns student's courses information with an order of name, crn and
         url
 
-        Example return: [('BIL 112E', '24925', '/Sinif/12667.118786'), ...]
+        Example return: [('BIL 112E', '24925', '/Sinif/12667.118786', 'Intr.to Prog.Language(FORTRAN)'), ...]
 
         crn value is also a string because havuz courses don't have a crn value,
         and they return a 'Havuz' value.
