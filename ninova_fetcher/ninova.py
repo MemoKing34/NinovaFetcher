@@ -33,6 +33,7 @@ BASE_URL = "https://ninova.itu.edu.tr"
 SINIF_DOSYALARI_URL_EXTENSION = "/SinifDosyalari"
 DERS_DOSYALARI_URL_EXTENSION = "/DersDosyalari"
 ODEVLER_URL_EXTENSION = "/Odevler"
+SINIF_BILGISI_URL_EXTENSION = "/SinifBilgileri"
 PathList: TypeAlias = list[Union['Path', 'PathList']]
 
 DOTENV_PATH: Path = Path(".env")
@@ -171,10 +172,18 @@ class Ninova:
         soup = BeautifulSoup(response.text, PARSER)
         def get_info_from_class(tag: "element.Tag", subtag: "element.Tag") -> Course:
             _liste = subtag.find("a").text.split()
+            _path = subtag.find("a").attrs['href']
+            _name = tag.find("strong").text
+            response = self.session.get(f"{BASE_URL}{_path}{SINIF_BILGISI_URL_EXTENSION}")
+            soup = BeautifulSoup(response.text, PARSER)
+            _tuple = [tag.text.strip() for tag in soup.find("table", attrs={'class': 'formAbetGoster'}).find_all("td")]
+            _turkce_isim = _tuple[4]
+            _ingilizce_isim = _tuple[6]
+            _long_name = _ingilizce_isim if 'E' in _name.upper() else _turkce_isim
             return Course(
-                tag.find("strong").text,
+                _name,
                 _liste[-1] if _liste[-1].isdigit() else ' '.join(_liste).replace("'", ""),
-                subtag.find("a").attrs['href']
+                _path, _long_name,
             )
 
         return [get_info_from_class(tag, subtag or tag) for tag in soup.find("ul").children if tag != "\n" for subtag in tag.find("ul").children if subtag != "\n"]

@@ -1,4 +1,5 @@
 import hashlib
+import re
 import sys
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -44,6 +45,8 @@ else:
 
 from pwinput import pwinput
 
+FOLDER_NAME_PATTERN = r'([\w\s]*?)\s*[<#](.*)[>#]\s*\[(\w*)\]'
+
 
 class FileClass(StrEnum):
     SINIF = 'sinif'
@@ -55,19 +58,22 @@ class Course:
     name: str
     crn: str
     url: str
+    long_name: str
     estimated_size: int = 0
     downloaded_size: int = 0
 
     @property
     def folder_name(self) -> str:
-        return f'{self.name} [{self.crn}]'
+        if sys.platform != 'win32':
+            return f'{self.name} <{self.long_name}> [{self.crn}]'
+        return f'{self.name} #{self.long_name}# [{self.crn}]'
     
     @classmethod
     def from_folder_name(cls, folder_name: str, url: str) -> Self:
-        # e.g. folder_name = 'BIL 112E [24925]'
-        name, crn = folder_name.split('[')
-        crn = crn[:-1]
-        return cls(name, crn, url)
+        # e.g. folder_name = 'BIL 112E <Intr.to Prog.Language(FORTRAN)> [24925]'
+        _match = re.search(FOLDER_NAME_PATTERN, folder_name)
+        name, long_name, crn = _match.group(1, 2, 3)
+        return cls(name, crn, url, long_name)
 
 @dataclass
 class NinovaPath:
