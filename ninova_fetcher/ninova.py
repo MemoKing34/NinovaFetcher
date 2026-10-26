@@ -265,6 +265,10 @@ class Ninova:
                 except FileNotFoundError:
                     pass
                 r = self.session.get(BASE_URL + ninova_path.url)
+                if 'hata.html' in r.url:
+                    # set (stupid error tracker)
+                    log.warning("A server side error happened while downloading a file.")
+                    continue
                 _offset = r.headers.get("content-disposition", "").index("filename=") + 9
                 filename = r.headers.get("content-disposition", "")[_offset:].encode("iso-8859-9").decode("utf-8")
                 filesize = int(r.headers.get("Content-Length", 0))
