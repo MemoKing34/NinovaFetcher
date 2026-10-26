@@ -178,7 +178,7 @@ class Ninova:
             _turkce_isim = _tuple[4]
             _ingilizce_isim = _tuple[6]
             _donem = tables[1].find_all("td")[1].text.strip()
-            return _ingilizce_isim if 'E' in name.upper() else _turkce_isim, _donem
+            return _ingilizce_isim if 'E' in name[4:].upper() else _turkce_isim, _donem
         
         def get_info_from_class(tag: "element.Tag", subtag: "element.Tag") -> Course:
             _liste = subtag.find("a").text.split()
