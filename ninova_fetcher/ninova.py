@@ -242,7 +242,7 @@ class Ninova:
 
     def __download(self, ninova_path_list: list[NinovaPath], download_path: Path, course: Course, file_class: FileClass):
         for ninova_path in ninova_path_list:
-            log.debug(f"Downloading {ninova_path.name!r}")
+            log.debug(f"Downloading {ninova_path.name!r}/")
             if ninova_path.icon.endswith("folder.png"):
                 ninova_path.path = download_path / ninova_path.name
                 self._download(ninova_path.url, ninova_path.path, course, file_class, ninova_path)
@@ -267,7 +267,7 @@ class Ninova:
                 r = self.session.get(BASE_URL + ninova_path.url)
                 if 'hata.html' in r.url:
                     # set (stupid error tracker)
-                    log.warning("A server side error happened while downloading a file.")
+                    log.warning(f"A server side error happened while downloading a file. ({ninova_path.name!r})")
                     continue
                 _offset = r.headers.get("content-disposition", "").index("filename=") + 9
                 filename = r.headers.get("content-disposition", "")[_offset:].encode("iso-8859-9").decode("utf-8")
