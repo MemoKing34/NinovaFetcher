@@ -65,7 +65,7 @@ class Course:
 
     @property
     def folder_name(self) -> str:
-        if sys.platform != 'win32':
+        if sys.platform not in ('win32', 'android'):
             return f'{self.name} <{self.long_name}> [{self.crn}]'
         return f'{self.name} #{self.long_name}# [{self.crn}]'
     

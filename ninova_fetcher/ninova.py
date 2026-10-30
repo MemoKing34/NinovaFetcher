@@ -87,7 +87,7 @@ def sanitize_filename(filename: str, force: bool = False) -> str:
     # replaces unsupported chars with #
     # again thanks to yt-dlp
     REPL = '#'
-    if sys.platform != 'win32' and not force:
+    if sys.platform not in ('win32', 'android') and not force:
         return filename.replace('/', REPL)
     return re.sub(r'[/<>:"\|\\?\*]|[\s.]$', REPL, filename)
 
